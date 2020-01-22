@@ -9,9 +9,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
- *  formats={"json"},
- *     collectionOperations ={"GET","POST"},
- *     itemOperations ={"GET"}
+ *     formats={"json"},
+ *     collectionOperations ={},
+ *     itemOperations ={}
  * )
  * @ORM\Entity(repositoryClass="App\Repository\BusinessObjectRepository")
  */

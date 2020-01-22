@@ -19,32 +19,29 @@ class LocalityRepository extends ServiceEntityRepository
         parent::__construct($registry, Locality::class);
     }
 
-    // /**
-    //  * @return Locality[] Returns an array of Locality objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    /**
+     * @param string $typeCode
+     * @param string $parentCode
+     * @param string $languageCode
+     * @return mixed
+     */
+    public function findWithFilter($typeCode = '', $parentCode = '', $languageCode = '')
     {
-        return $this->createQueryBuilder('l')
-            ->andWhere('l.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('l.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
 
-    /*
-    public function findOneBySomeField($value): ?Locality
-    {
-        return $this->createQueryBuilder('l')
-            ->andWhere('l.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
+        $queryBuilder = $this->createQueryBuilder('l')
+            ->andWhere('l.type_code = :_typeCode')
+            ->setParameter('_typeCode', 'city')
+            //->leftJoin('l.parent', 'p', 'WITH', 'p.id = :_parentCode')
+            //->andWhere('l.parent= :_parentCode')
+            //->setParameter('_parentCode', $parentCode)
+
+            ->join('l.translations', 'lt', 'WITH', 'lt.locality= l.id')
+            ->andWhere('lt.locale= :_languageCode')
+            ->setParameter('_languageCode', 'fr');
+
+        $result = $queryBuilder->getQuery()->getResult();
+//dd(sizeof($result));
+        return $result;
         ;
     }
-    */
 }

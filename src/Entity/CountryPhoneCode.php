@@ -9,7 +9,11 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ApiResource(formats={"json"})
+ * @ApiResource(
+ *     formats={"json"},
+ *     collectionOperations ={},
+ *     itemOperations ={}
+ *     )
  * @ORM\Entity(repositoryClass="App\Repository\CountryPhoneCodeRepository")
  */
 class CountryPhoneCode

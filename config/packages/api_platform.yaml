@@ -1,10 +1,21 @@
 api_platform:
+    # The title of the API.
+    title: 'API title'
+    # The description of the API.
+    description: 'API description'
+    # The version of the API.
+    version: '1.0.0'
+
+    # Set this to false if you want Webby to disappear.
+    show_webby: false
+
     mapping:
-        paths: ['%kernel.project_dir%/src/Entity']
+        paths: ['%kernel.project_dir%/src/Entity', '%kernel.project_dir%/config/api_platform']
     patch_formats:
-        json: ['application/merge-patch+json']
+        json: ['application/json']
     swagger:
-        versions: [3]
+        versions: [2, 3]
     eager_loading:
       force_eager: false
+
     

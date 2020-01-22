@@ -8,9 +8,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ApiResource(formats={"json"},
- *     collectionOperations ={"GET"},
- *     itemOperations ={"GET"})
+ * @ApiResource(
+ *     formats={"json"},
+ *     collectionOperations ={},
+ *     itemOperations ={})
  * @ORM\Entity(repositoryClass="App\Repository\ParameterRepository")
  */
 class Parameter

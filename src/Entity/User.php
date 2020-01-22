@@ -7,7 +7,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ApiResource(formats={"json"})
+ * @ApiResource(
+ *     formats={"json"},
+ *     collectionOperations ={},
+ *     itemOperations ={}
+ *)
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  */
 class User

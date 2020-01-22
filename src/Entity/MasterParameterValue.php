@@ -17,21 +17,9 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ApiResource(
- * formats={"json"},
- *     collectionOperations={
- *        "get" : {"method": "GET"},
- *        "post" : {
- *           "method": "POST",
- *           "normalization_context"={"groups"={"translations"}},
- *        }
- *     },
- *     itemOperations={
- *        "get" : {"method": "GET"},
- *        "put" : {
- *           "method": "PUT",
- *           "normalization_context"={"groups"={"translations"}},
- *        }
- *     },
+ *     formats={"json"},
+ *     collectionOperations ={},
+ *     itemOperations ={},
  *     attributes={
  *        "order"={"rank":"asc"},
  *        "filters"={"translation.groups"},

@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\ProductTranslation;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\DBAL\FetchMode;
 
 /**
  * @method ProductTranslation|null find($id, $lockMode = null, $lockVersion = null)
@@ -19,32 +20,44 @@ class ProductTranslationRepository extends ServiceEntityRepository
         parent::__construct($registry, ProductTranslation::class);
     }
 
-    // /**
-    //  * @return ProductTranslation[] Returns an array of ProductTranslation objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    /**
+     * @param int $fetchMode
+     * @return array|\mixed[]
+     */
+    public function getTranslationCodeExistant($fetchMode = FetchMode::COLUMN)
     {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('p.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+        $sql = 'select DISTINCT (locale) from product_translation';
 
-    /*
-    public function findOneBySomeField($value): ?ProductTranslation
-    {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
+        $query = $this->getEntityManager()->getConnection()->query($sql);
+        $result = $query->fetchAll($fetchMode);
+
+        return $result;
     }
-    */
+
+    /**
+     * Search product
+     * @param string $typeCode
+     * @param string $subTypeCode
+     * @param string $languageCode
+     * @return mixed
+     */
+    public function searchProduct($typeCode = '', $subTypeCode = '', $languageCode = 'fr')
+    {
+        $queryBuilder = $this->createQueryBuilder('pt')
+            ->andWhere('pt.locale= :_languageCode')
+            ->setParameter('_languageCode', $languageCode)
+            ->innerJoin('pt.product', 'p', 'WITH', 'p.id = pt.product');
+        if ($typeCode) {
+            $queryBuilder->andWhere('p.type = :_typeCode')
+                ->setParameter('_typeCode', $typeCode);
+        }
+
+        if ($subTypeCode) {
+            $queryBuilder->andWhere('p.subType =:_subTypeCode')
+                ->setParameter('_subTypeCode', $subTypeCode);
+        }
+        $result = $queryBuilder->getQuery()->getResult();
+
+        return $result;
+    }
 }

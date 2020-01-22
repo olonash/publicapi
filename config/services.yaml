@@ -26,3 +26,12 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    app.locality_manager:
+        class: App\Manager\LocalityManager
+        arguments: ['App\Entity\Locality','@service_container']
+        public: true
+    app.product_manager:
+        class: App\Manager\ProductManager
+        arguments: ['App\Entity\Product','@service_container']
+        public: true

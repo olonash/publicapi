@@ -19,32 +19,32 @@ class ProductRepository extends ServiceEntityRepository
         parent::__construct($registry, Product::class);
     }
 
-    // /**
-    //  * @return Product[] Returns an array of Product objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    /**
+     * @param string $typeCode
+     * @param string $parentCode
+     * @param string $languageCode
+     * @return mixed
+     */
+    public function searchProduct($typeCode = '', $subTypeCode = '', $languageCode = 'fr')
     {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('p.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+        $queryBuilder = $this->createQueryBuilder('p')->select();
+        if ($typeCode) {
+            $queryBuilder->andWhere('p.type =:_typeCode')
+                ->setParameter('_typeCode', $typeCode);
+        }
 
-    /*
-    public function findOneBySomeField($value): ?Product
-    {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
+        if ($subTypeCode) {
+            $queryBuilder->orWhere('p.subType =:_subTypeCode')
+                ->setParameter('_subTypeCode', $subTypeCode);
+        }
+
+        $queryBuilder->innerJoin('p.translations', 'pt', 'WITH', "p.id = pt.product AND pt.locale = 'en'")
+            ->andWhere('pt.locale =:_locale')
+            ->setParameter('_locale', 'en');
+        
+//dd($queryBuilder->getQuery()->getSQL()); die;
+        $result = $queryBuilder->getQuery()->getResult();
+
+        return $result;
     }
-    */
 }

@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\LocalityTranslationRepository")
- * @ORM\Table(name="locality_transalation",uniqueConstraints={@ORM\UniqueConstraint(name="uniq_locality_name", columns={"name", "locale"})})
+ * @ORM\Table(name="locality_translation",uniqueConstraints={@ORM\UniqueConstraint(name="uniq_locality_name", columns={"name", "locale"})})
  * @UniqueEntity(fields={"name","locale"})
  */
 class LocalityTranslation extends AbstractTranslation

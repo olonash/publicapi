@@ -1,0 +1,3 @@
+api_location_static:
+    path: /static/location/
+    controller: App\Controller\LocalityController::staticLocation

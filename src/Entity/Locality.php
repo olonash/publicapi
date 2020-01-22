@@ -10,21 +10,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ApiResource(formats={"json"},
- *     collectionOperations={
- *        "get" : {"method": "GET"},
- *        "post" : {
- *           "method": "POST",
- *           "normalization_context"={"groups"={"translations"}},
- *        }
- *     },
- *     itemOperations={
- *        "get" : {"method": "GET"},
- *        "put" : {
- *           "method": "PUT",
- *           "normalization_context"={"groups"={"translations"}},
- *        }
- *     },
+ * @ApiResource(
+ *     formats={"json"},
+ *     itemOperations={},
  *     attributes={
  *        "filters"={"translation.groups"},
  *        "normalization_context"={"groups"={"locality_read"}},

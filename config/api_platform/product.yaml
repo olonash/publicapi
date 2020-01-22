@@ -1,0 +1,50 @@
+resources:
+  App\Entity\Product:
+    collectionOperations :
+      api_product_search:
+        method: POST
+        route_name: 'api_product_search'
+        controller: 'App\Controller\ProductController'
+        swagger_context:
+          summary: Recherche de produit
+          description: Recheche de produit selon les critères
+          parameters:
+            -
+              name : body
+              in: body
+              schema:
+                type : object
+                properties:
+                  type_code:
+                    type: string
+                    required: false
+                    description: Le type de code recherché. Valeur possible null|city|country
+                  sub_type_code:
+                    type: string
+                    required: false
+                    description: Sous type code
+                  language_code:
+                    type: string
+                    required: false
+                    description: Code de la langue souhaité
+          responses:
+            200:
+              description: Success
+              schema:
+                type : array
+                items:
+                  type : object
+                  properties:
+                    id:
+                      type: string
+                      required: true
+                      description: Id du produit
+                    name:
+                      type: string
+                      required: true
+                      description: Nom du produit
+
+            400:
+              description: Erreur
+            500:
+              description: Erreur

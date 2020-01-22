@@ -1,0 +1,57 @@
+resources:
+  App\Entity\Locality:
+    collectionOperations :
+      api_location_static:
+        method: POST
+        route_name: 'api_location_static'
+        controller: 'App\Controller\LocalityController'
+        swagger_context:
+          summary: Liste filtrée des pays avec leur translation
+          description: Recupere la liste des pays avec leur translation selon le filtre
+          parameters:
+            -
+              name : body
+              in: body
+              schema:
+                type : object
+                properties:
+                  type_code:
+                    type: string
+                    required: false
+                    description: Le type de code recherché. Valeur possible null|city|country
+                  parent_code:
+                    type: string
+                    required: false
+                    description: Code du pays de la ville
+                  language_code:
+                    type: string
+                    required: false
+                    description: Code de la langue souhaité
+          responses:
+            200:
+              description: Success
+              schema:
+                type : array
+                items:
+                  type : object
+                  properties:
+                    code:
+                      type: string
+                      required: true
+                      description: Code du language
+                    name:
+                      type: string
+                      required: true
+                      description: Nom du pays, de la ville
+                    type:
+                      type: string
+                      required: false
+                      description: Type country ou type city
+                    parent_code:
+                      type: string
+                      required: false
+                      description: Parent code
+            400:
+              description: Erreur
+            500:
+              description: Erreur

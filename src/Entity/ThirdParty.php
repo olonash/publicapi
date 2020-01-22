@@ -11,7 +11,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ApiResource(formats={"json"})
+ * @ApiResource(
+ *     formats={"json"},
+ *     collectionOperations ={},
+ *     itemOperations ={}
+ * )
  * @ApiFilter(SearchFilter::class, properties={"name": "partial","relationType":"exact","organization":"exact","active":"exact"})
  * @ORM\Entity(repositoryClass="App\Repository\ThirdPartyRepository")
  */

@@ -5,6 +5,9 @@ namespace App\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use Doctrine\ORM\Mapping as ORM;
 use Locastic\ApiPlatformTranslationBundle\Model\AbstractTranslatable;
 use Locastic\ApiPlatformTranslationBundle\Model\TranslationInterface;
@@ -13,27 +16,16 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
- * formats={"json"},
- *     collectionOperations={
- *        "get" : {"method": "GET"},
- *        "post" : {
- *           "method": "POST",
- *           "normalization_context"={"groups"={"translations"}},
- *        }
- *     },
- *     itemOperations={
- *        "get" : {"method": "GET"},
- *        "put" : {
- *           "method": "PUT",
- *           "normalization_context"={"groups"={"translations"}},
- *        }
- *     },
+ *     formats={"json"},
+ *     itemOperations={},
  *     attributes={
  *        "filters"={"translation.groups"},
  *        "normalization_context"={"groups"={"product_read"}},
  *        "denormalization_context"={"groups"={"product_write"}}
  *     }
  * )
+ * @ApiFilter(SearchFilter::class, properties={"tenant":"exact","id":"exact","translations.name":"partial"})
+ * @ApiFilter(BooleanFilter::class, properties={"active"})
  * @ORM\Entity(repositoryClass="App\Repository\ProductRepository")
  */
 class Product  extends AbstractTranslatable
@@ -42,9 +34,15 @@ class Product  extends AbstractTranslatable
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups({"translations"})
+     * @Groups({"product_read", "translations"})
      */
     private $id;
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Tenant")
+     * @ORM\JoinColumn(name="tenant_id", referencedColumnName="id",nullable=false)
+     * @Groups({"product_read", "product_write", "translations"}) 
+     */
+    private $tenant;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\MasterParameterValue")
@@ -74,7 +72,14 @@ class Product  extends AbstractTranslatable
     private $externalReference;
 
     /**
-     * @ORM\Column(type="boolean")
+     * @ORM\ManyToOne(targetEntity="App\Entity\MasterParameterValue")
+     * @ORM\JoinColumn(name="external_system_code", referencedColumnName="value_code")
+     * @Groups({"product_read", "product_write", "translations"})
+     */
+    private $externalSystem;
+
+    /**
+     * @ORM\Column(type="boolean",options={"default" : 1})
      * @Groups({"product_read", "product_write", "translations"})
      */
     private $active;
@@ -103,47 +108,7 @@ class Product  extends AbstractTranslatable
      */
     private $durationMinutes;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     * @Groups({"product_read", "product_write", "translations"})
-     */
-    private $childMinAge;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     * @Groups({"product_read", "product_write", "translations"})
-     */
-    private $childMaxAge;
-
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     * @Groups({"product_read", "product_write", "translations"})
-     */
-    private $babyMinAge;
-
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     * @Groups({"product_read", "product_write", "translations"})
-     */
-    private $babyMaxAge;
-
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     * @Groups({"product_read", "product_write", "translations"})
-     */
-    private $callPriceBeforeDiscount;
-
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     * @Groups({"product_read", "product_write", "translations"})
-     */
-    private $callPrice;
-
-    /**
-     * @ORM\Column(type="decimal", precision=4, scale=2, nullable=true)
-     * @Groups({"product_read", "product_write", "translations"})
-     */
-    private $discountPourcentage;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\ThirdParty", inversedBy="products")
@@ -153,41 +118,94 @@ class Product  extends AbstractTranslatable
     private $supplier;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\ThirdParty")
-     * @ORM\JoinColumn(name="operator_id", referencedColumnName="id")
-     * @Groups({"product_read", "product_write", "translations"})
+     * @ORM\Column(type="string", length=100, nullable=true)
      */
-    private $operator;
+    private $producerReference;
+    
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\ParameterValue")
-     * @ORM\JoinColumn(name="group_code", referencedColumnName="value_code")
+     * @ORM\ManyToOne(targetEntity="App\Entity\TenantParameterValue")
+     * @ORM\JoinColumn(name="group_id", referencedColumnName="id")
      * @Groups({"product_read", "product_write", "translations"})
      */
-    private $groupCode;
+    private $group;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\ParameterValue")
-     * @ORM\JoinColumn(name="sub_group_code", referencedColumnName="value_code")
+     * @ORM\ManyToOne(targetEntity="App\Entity\TenantParameterValue")
+     * @ORM\JoinColumn(name="sub_group_id", referencedColumnName="id")
      * @Groups({"product_read", "product_write", "translations"})
      */
-    private $subGroupCode;
+    private $subGroup;
 
 
     /**
-     * @Groups({"product_read"})
+     * @Groups({"product_read", "product_write", "translations"})
      */
     private $name;
 
     /**
-     * @Groups({"product_write", "translations"})
      * @ORM\OneToMany(targetEntity="App\Entity\ProductTranslation", mappedBy="product", cascade={"persist", "remove"})
+     * @Groups({"product_read","product_write", "translations"})
      */
     protected $translations;
+    
 
+    /**
+     * @Groups({"product_read", "product_write", "translations"})
+     * @ORM\Column(type="decimal", precision=4, scale=2,options={"default" : 0})
+     */
+    private $vatPercentage;
+    
+     /**
+     * @ORM\Column(type="decimal", precision=19, scale=8, nullable=true)
+     * @Groups({"product_read", "product_write", "translations"})
+     */
+    private $longitude;
 
+    /**
+     * @ORM\Column(type="decimal", precision=18, scale=8, nullable=true)
+     * @Groups({"product_read", "product_write", "translations"})
+     */
+    private $latitude;
 
+    /**
+     * @ORM\Column(type="string", length=5, nullable=true)
+     * @Groups({"product_read", "product_write", "translations"})
+     */
+    private $departureTime;
 
+    /**
+     * @ORM\Column(type="string", length=5, nullable=true)
+     * @Groups({"product_read", "product_write", "translations"})
+     */
+    private $arrivalTime;
+
+    /**
+     * @ORM\Column(type="integer",length=1,options={"default" : 0})
+     * @Groups({"product_read", "product_write", "translations"})
+     */
+    private $arrivalDayPlus;
+
+    /**
+     * @ORM\Column(type="integer", length=1, nullable=true)
+     * @Groups({"product_read", "product_write", "translations"})
+     */
+    private $stars;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\ProductLocality", mappedBy="product", cascade={"persist", "remove"})
+     * @Groups({"product_read", "product_write", "translations"})
+     */
+    private $localities;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->localities = new ArrayCollection();
+    }
+
+  
+    
     public function setName($name)
     {
         $this->getTranslation()->setName($name);
@@ -311,90 +329,6 @@ class Product  extends AbstractTranslatable
         return $this;
     }
 
-    public function getChildMinAge(): ?int
-    {
-        return $this->childMinAge;
-    }
-
-    public function setChildMinAge(?int $childMinAge): self
-    {
-        $this->childMinAge = $childMinAge;
-
-        return $this;
-    }
-
-    public function getChildMaxAge(): ?int
-    {
-        return $this->childMaxAge;
-    }
-
-    public function setChildMaxAge(?int $childMaxAge): self
-    {
-        $this->childMaxAge = $childMaxAge;
-
-        return $this;
-    }
-
-    public function getBabyMinAge(): ?int
-    {
-        return $this->babyMinAge;
-    }
-
-    public function setBabyMinAge(?int $babyMinAge): self
-    {
-        $this->babyMinAge = $babyMinAge;
-
-        return $this;
-    }
-
-    public function getBabyMaxAge(): ?int
-    {
-        return $this->babyMaxAge;
-    }
-
-    public function setBabyMaxAge(?int $babyMaxAge): self
-    {
-        $this->babyMaxAge = $babyMaxAge;
-
-        return $this;
-    }
-
-    public function getCallPriceBeforeDiscount(): ?int
-    {
-        return $this->callPriceBeforeDiscount;
-    }
-
-    public function setCallPriceBeforeDiscount(?int $callPriceBeforeDiscount): self
-    {
-        $this->callPriceBeforeDiscount = $callPriceBeforeDiscount;
-
-        return $this;
-    }
-
-    public function getCallPrice(): ?int
-    {
-        return $this->callPrice;
-    }
-
-    public function setCallPrice(?int $callPrice): self
-    {
-        $this->callPrice = $callPrice;
-
-        return $this;
-    }
-
-    public function getDiscountPourcentage(): ?string
-    {
-        return $this->discountPourcentage;
-    }
-
-    public function setDiscountPourcentage(?string $discountPourcentage): self
-    {
-        $this->discountPourcentage = $discountPourcentage;
-
-        return $this;
-    }
-
     public function getSupplier(): ?ThirdParty
     {
         return $this->supplier;
@@ -407,38 +341,26 @@ class Product  extends AbstractTranslatable
         return $this;
     }
 
-    public function getOperator(): ?ThirdParty
+    public function getGroup(): ?TenantParameterValue
     {
-        return $this->operator;
+        return $this->group;
     }
 
-    public function setOperator(?ThirdParty $operator): self
+    public function setGroup(?TenantParameterValue $group): self
     {
-        $this->operator = $operator;
+        $this->group = $group;
 
         return $this;
     }
 
-    public function getGroupCode(): ?ParameterValue
+    public function getSubGroup(): ?TenantParameterValue
     {
-        return $this->groupCode;
+        return $this->subGroup;
     }
 
-    public function setGroupCode(?ParameterValue $groupCode): self
+    public function setSubGroup(?TenantParameterValue $subGroup): self
     {
-        $this->groupCode = $groupCode;
-
-        return $this;
-    }
-
-    public function getSubGroupCode(): ?ParameterValue
-    {
-        return $this->subGroupCode;
-    }
-
-    public function setSubGroupCode(?ParameterValue $subGroupCode): self
-    {
-        $this->subGroupCode = $subGroupCode;
+        $this->subGroup = $subGroup;
 
         return $this;
     }
@@ -474,5 +396,155 @@ class Product  extends AbstractTranslatable
         }
     }
 
+    public function getExternalSystem(): ?MasterParameterValue
+    {
+        return $this->externalSystem;
+    }
+
+    public function setExternalSystem(?MasterParameterValue $externalSystem): self
+    {
+        $this->externalSystem = $externalSystem;
+
+        return $this;
+    }
+
+    public function getVatPercentage(): ?string
+    {
+        return $this->vatPercentage;
+    }
+
+    public function setVatPercentage(?string $vatPercentage): self
+    {
+        $this->vatPercentage = $vatPercentage;
+
+        return $this;
+    }
+
+    public function getProducerReference(): ?string
+    {
+        return $this->producerReference;
+    }
+
+    public function setProducerReference(?string $producerReference): self
+    {
+        $this->producerReference = $producerReference;
+
+        return $this;
+    }
+     
+    public function getLongitude(): ?string
+    {
+        return $this->longitude;
+    }
+
+    public function setLongitude(?string $longitude): self
+    {
+        $this->longitude = $longitude;
+
+        return $this;
+    }
+
+    public function getLatitude(): ?string
+    {
+        return $this->latitude;
+    }
+
+    public function setLatitude(?string $latitude): self
+    {
+        $this->latitude = $latitude;
+
+        return $this;
+    }
+
+    public function getDepartureTime(): ?string
+    {
+        return $this->departureTime;
+    }
+
+    public function setDepartureTime(?string $departureTime): self
+    {
+        $this->departureTime = $departureTime;
+
+        return $this;
+    }
+
+    public function getArrivalTime(): ?string
+    {
+        return $this->arrivalTime;
+    }
+
+    public function setArrivalTime(?string $arrivalTime): self
+    {
+        $this->arrivalTime = $arrivalTime;
+
+        return $this;
+    }
+
+    public function getArrivalDayPlus(): ?int
+    {
+        return $this->arrivalDayPlus;
+    }
+
+    public function setArrivalDayPlus(?int $arrivalDayPlus): self
+    {
+        $this->arrivalDayPlus = $arrivalDayPlus;
+
+        return $this;
+    }
+
+    public function getStars(): ?int
+    {
+        return $this->stars;
+    }
+
+    public function setStars(?int $stars): self
+    {
+        $this->stars = $stars;
+
+        return $this;
+    }
+
+    public function getTenant(): ?Tenant
+    {
+        return $this->tenant;
+    }
+
+    public function setTenant(?Tenant $tenant): self
+    {
+        $this->tenant = $tenant;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ProductLocality[]
+     */
+    public function getLocalities(): Collection
+    {
+        return $this->localities;
+    }
+
+    public function addLocality(ProductLocality $locality): self
+    {
+        if (!$this->localities->contains($locality)) {
+            $this->localities[] = $locality;
+            $locality->setProduct($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLocality(ProductLocality $locality): self
+    {
+        if ($this->localities->contains($locality)) {
+            $this->localities->removeElement($locality);
+            // set the owning side to null (unless already changed)
+            if ($locality->getProduct() === $this) {
+                $locality->setProduct(null);
+            }
+        }
+
+        return $this;
+    }
 
 }

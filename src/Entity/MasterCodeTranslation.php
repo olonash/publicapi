@@ -10,53 +10,57 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\ParameterValueTranslationRepository")
+ * @ORM\Entity(repositoryClass="App\Repository\MasterCodeTranslationRepository")
  */
-class ParameterValueTranslation extends AbstractTranslation
+class MasterCodeTranslation extends AbstractTranslation
 {
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue(strategy="NONE")
      * @ORM\Column(type="string", length=100)
      * @ApiProperty(identifier=true)
-     * @Groups({"parameterValue_read", "parameterValue_write", "translations"})
+     * @Groups({"masterCode_read", "masterCode_write", "translations"})
      */
-    private $ValueCode;
+    private $code;
      /**
      * @ORM\Id()
      * @ORM\GeneratedValue(strategy="NONE")
      * @ORM\Column(type="string", length=2)
      * @ApiProperty(identifier=true)
-     * @Groups({"parameterValue_write", "translations"})
+     * @Groups({"masterCode_write", "translations"})
      */
     protected $locale;
 
     /**
      * @ORM\Column(type="string", length=100)
-     * @Groups({"parameterValue_read", "parameterValue_write", "translations"})
+     * @Groups({"masterCode_read", "masterCode_write", "translations"})
      */
     private $name;
 
-
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\ParameterValue",cascade={"persist"}, inversedBy="translations")
-     * @ORM\JoinColumn(name="value_code", referencedColumnName="value_code")
+     * @ORM\ManyToOne(targetEntity="App\Entity\MasterCode",cascade={"persist"}, inversedBy="translations")
+     * @ORM\JoinColumn(name="code", referencedColumnName="code")
      */
-    private $parameterValue;
+    private $masterCode;
 
-
-    public function getParameterValue(): ?ParameterValue
+    public function getCode(): ?string
     {
-        return $this->parameterValue;
+        return $this->code;
+    }
+    
+    public function getMasterCode(): ?MasterCode
+    {
+        return $this->masterCode;
     }
 
-    public function setParameterValue(?ParameterValue $parameterValue): self
+    public function setMasterCode(?MasterCode $masterCode): self
     {
-        $this->parameterValue = $parameterValue;
+        $this->masterCode = $masterCode;
 
         return $this;
     }
-    
+
+
     public function getName(): ?string
     {
         return $this->name;
@@ -69,7 +73,7 @@ class ParameterValueTranslation extends AbstractTranslation
         return $this;
     }
 
-    
+
     public function getLocale(): ?string
     {
         return $this->locale;
@@ -79,7 +83,5 @@ class ParameterValueTranslation extends AbstractTranslation
     {
         $this->locale = $locale;
     }
-
-    
    
 }

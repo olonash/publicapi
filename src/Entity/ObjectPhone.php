@@ -3,17 +3,20 @@
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ApiResource(
  *     formats={"json"},
- *     collectionOperations ={},
- *     itemOperations ={}
+ *     collectionOperations={},
+ *     itemOperations={}
  * )
- * @ORM\Entity(repositoryClass="App\Repository\PhoneRepository")
+ * @ApiFilter(SearchFilter::class, properties={"object":"exact","objectId":"exact"})
+ * @ORM\Entity(repositoryClass="App\Repository\ObjectPhoneRepository")
  */
-class Phone
+class ObjectPhone
 {
     /**
      * @ORM\Id()
@@ -31,7 +34,7 @@ class Phone
      * @ORM\ManyToOne(targetEntity="App\Entity\BusinessObject")
      * @ORM\JoinColumn(name="object_code", referencedColumnName="object_code",nullable=false)
      */
-    private $objectCode;
+    private $object;
 
     /**
      * @ORM\Column(type="integer")
@@ -46,9 +49,15 @@ class Phone
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\CountryPhoneCode")
-     * @ORM\JoinColumn(name="calling_code", referencedColumnName="calling_code",nullable=false)
+     * @ORM\JoinColumn(name="calling_code", referencedColumnName="calling_code")
      */
     private $calling_code;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Tenant")
+     * @ORM\JoinColumn(name="tenant_id", referencedColumnName="id", nullable=true)
+     */
+    private $tenant;
 
     public function getId(): ?int
     {
@@ -67,14 +76,14 @@ class Phone
         return $this;
     }
 
-    public function getObjectCode(): ?BusinessObject
+    public function getObject(): ?BusinessObject
     {
-        return $this->objectCode;
+        return $this->object;
     }
 
-    public function setObjectCode(?BusinessObject $objectCode): self
+    public function setObject(?BusinessObject $object): self
     {
-        $this->objectCode = $objectCode;
+        $this->object = $object;
 
         return $this;
     }
@@ -103,14 +112,26 @@ class Phone
         return $this;
     }
 
-    public function getCountry(): ?CountryPhoneCode
+    public function getCallingCode(): ?CountryPhoneCode
     {
-        return $this->country;
+        return $this->calling_code;
     }
 
-    public function setCountry(?CountryPhoneCode $country): self
+    public function setCallingCode(?CountryPhoneCode $calling_code): self
     {
-        $this->country = $country;
+        $this->calling_code = $calling_code;
+
+        return $this;
+    }
+
+    public function getTenant(): ?Tenant
+    {
+        return $this->tenant;
+    }
+
+    public function setTenant(?Tenant $tenant): self
+    {
+        $this->tenant = $tenant;
 
         return $this;
     }
